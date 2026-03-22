@@ -9,6 +9,7 @@
   <a href="#architecture">Architecture</a> •
   <a href="#how-it-works">How It Works</a> •
   <a href="#smart-contracts">Contracts</a> •
+  <a href="#tokenized-vault-shares">Tokens</a> •
   <a href="#ai-agents">Agents</a> •
   <a href="#frontend">Frontend</a> •
   <a href="#getting-started">Getting Started</a> •
@@ -48,9 +49,62 @@ DeFi yield management today forces users into a binary choice: manage positions 
 
 ## Architecture
 
-<p align="center">
-  <img src="./docs/diagrams/architecture.svg" alt="Vaultera System Architecture" width="100%"/>
-</p>
+```mermaid
+graph TB
+    subgraph Frontend["🖥️ Frontend — React / TypeScript / Tailwind"]
+        VD[Vault Dashboard]
+        AM[Agent Monitor]
+        AR[Arena]
+        LP[Live Performance]
+        AF[Activity Feed]
+        PF[Portfolio]
+    end
+
+    subgraph Hedera["⛓️ Hedera Network"]
+        subgraph Contracts["Smart Contracts — Solidity 0.8.20"]
+            V1[Vault 1 — vaHBAR]
+            V2[Vault 2 — vaSFI]
+            V3[Vault 3 — vaMALPHA]
+            S1[StableLending]
+            S2[MomentumPool]
+            S3[YieldFarm]
+            ARENA[Arena Contract]
+            USDC[USDC]
+            VAUSD[vaUSD]
+        end
+        HCS[Hedera Consensus Service — Immutable Agent Logs]
+    end
+
+    subgraph Agent["🤖 AI Agent Runtime — Node.js"]
+        ATLAS[Atlas — Conservative]
+        MERIDIAN[Meridian — Momentum]
+        ECHO[Echo — Adaptive Yield]
+        ENGINE[Decision Engine]
+        LLM[LLM Backend — Model Agnostic]
+    end
+
+    Frontend -- "ethers.js / JSON-RPC" --> Contracts
+    Frontend -- "Mirror Node REST" --> HCS
+    Frontend -- "Mirror Node REST" --> Contracts
+
+    ENGINE --> LLM
+    Agent -- "execute txs" --> Contracts
+    Agent -- "publish reasoning" --> HCS
+
+    V1 --> S1
+    V1 --> S2
+    V2 --> S1
+    V3 --> S2
+    V3 --> S3
+    V1 -. "stake" .-> ARENA
+    V3 -. "stake" .-> ARENA
+
+    style Frontend fill:#e7f5ff,stroke:#74c0fc,color:#1a1a2e
+    style Hedera fill:#ebfbee,stroke:#69db7c,color:#1a1a2e
+    style Agent fill:#fff9db,stroke:#fcc419,color:#1a1a2e
+    style Contracts fill:#d3f9d8,stroke:#69db7c,color:#1a1a2e
+    style HCS fill:#d3f9d8,stroke:#69db7c,color:#1a1a2e
+```
 
 The system is composed of three layers:
 
@@ -64,9 +118,41 @@ The system is composed of three layers:
 
 ## How It Works
 
-<p align="center">
-  <img src="./docs/diagrams/data-flow.svg" alt="Vaultera Data Flow" width="85%"/>
-</p>
+```mermaid
+flowchart TD
+    A["👤 User deposits USDC / vaUSD / HBAR"] --> B["🏦 Vault mints share tokens
+    e.g. vaHBAR, vaSFI, vaMALPHA"]
+    B --> C["🤖 Agent reads on-chain vault state
+    TVL · idle balance · strategy allocations"]
+    C --> D["🧠 LLM generates decision
+    persona + vault context → JSON response
+    actions: allocate, deallocate, arena...
+    reasoning: 'Given current TVL and risk...'"]
+    D --> E["⛓️ Execute on-chain"]
+    D --> F["📝 Publish to HCS"]
+    E --> G["Strategy allocations
+    Arena stakes
+    executeAction → event emitted"]
+    F --> H["Immutable reasoning log
+    Timestamped by network
+    Publicly auditable forever"]
+    G --> I["🖥️ Frontend renders everything
+    Contract state via RPC
+    Event logs via Mirror Node
+    HCS messages via Mirror Node
+    Real-time 1s yield simulation"]
+    H --> I
+
+    style A fill:#e7f5ff,stroke:#74c0fc,color:#1a1a2e
+    style B fill:#ebfbee,stroke:#69db7c,color:#1a1a2e
+    style C fill:#fff9db,stroke:#fcc419,color:#1a1a2e
+    style D fill:#f3f0ff,stroke:#b197fc,color:#1a1a2e
+    style E fill:#ebfbee,stroke:#69db7c,color:#1a1a2e
+    style F fill:#e7f5ff,stroke:#74c0fc,color:#1a1a2e
+    style G fill:#ebfbee,stroke:#69db7c,color:#1a1a2e
+    style H fill:#e7f5ff,stroke:#74c0fc,color:#1a1a2e
+    style I fill:#f3f0ff,stroke:#b197fc,color:#1a1a2e
+```
 
 1. **Users deposit** USDC, vaUSD, or native HBAR into a vault. The vault mints tokenized share tokens (e.g. `vaHBAR`, `vaSFI`, `vaMALPHA`) proportional to the USD value deposited. These shares are standard ERC20 tokens — transferable, composable, and queryable on-chain.
 2. **The AI agent wakes up** on a continuous cycle (configurable interval). It reads the vault's on-chain state: TVL, idle balance, deployed capital, strategy allocations, and open arena rounds.
@@ -79,9 +165,61 @@ The system is composed of three layers:
 
 ## Smart Contracts
 
-<p align="center">
-  <img src="./docs/diagrams/contract-topology.svg" alt="Vaultera Contract Topology" width="90%"/>
-</p>
+```mermaid
+graph LR
+    subgraph Users
+        U["👤 Users via MetaMask"]
+    end
+
+    subgraph Vaults
+        V1["Vault 1 — vaHBAR
+        HBAR Treasury Core"]
+        V2["Vault 2 — vaSFI
+        StableFlow Income"]
+        V3["Vault 3 — vaMALPHA
+        Momentum Alpha"]
+    end
+
+    subgraph Strategies
+        S1[StableLending — 4.8% APY]
+        S2[MomentumPool — 8.1% APY]
+        S3[YieldFarm — 5.9% APY]
+    end
+
+    subgraph Arena
+        ARENA["⚔️ Arena
+        Vault vs Vault staking
+        Winner: 90% · Protocol: 10%"]
+    end
+
+    subgraph Tokens
+        USDC[USDC]
+        VAUSD[vaUSD]
+    end
+
+    AGENT["🤖 AI Agent"] -. "allocate / execute / arena" .-> V1
+    AGENT -. "allocate / execute / arena" .-> V2
+    AGENT -. "allocate / execute / arena" .-> V3
+
+    U -- "deposit / withdraw" --> V1
+    U -- "deposit / withdraw" --> V2
+    U -- "deposit / withdraw" --> V3
+
+    V1 -- "USDC" --> S1
+    V2 -- "USDC" --> S1
+    V3 -- "USDC" --> S2
+    V3 -- "USDC" --> S3
+
+    V1 -. "open round" .-> ARENA
+    V3 -. "accept round" .-> ARENA
+
+    style Users fill:#f1f3f5,stroke:#adb5bd,color:#1a1a2e
+    style Vaults fill:#ebfbee,stroke:#69db7c,color:#1a1a2e
+    style Strategies fill:#d3f9d8,stroke:#69db7c,color:#1a1a2e
+    style Arena fill:#ffe3e3,stroke:#ff8787,color:#1a1a2e
+    style Tokens fill:#e7f5ff,stroke:#74c0fc,color:#1a1a2e
+    style AGENT fill:#fff9db,stroke:#fcc419,color:#1a1a2e
+```
 
 All contracts are deployed on **Hedera** using Solidity 0.8.20 and OpenZeppelin.
 
@@ -117,15 +255,68 @@ An adversarial staking mechanism where vaults compete head-to-head:
 - **USDC** — Mintable test stablecoin with capped supply
 - **vaUSD (VaultArenaUSD)** — Wrapped stablecoin layer with 1:1 USDC parity and authorized vault minting
 
-### Tokenized Vault Shares
+---
 
-Each vault mints an ERC20 share token that represents a user's proportional claim on the vault's assets. These tokens are fully transferable and composable with other DeFi protocols.
+## Tokenized Vault Shares
+
+When users deposit into a Vaultera vault, the contract mints **ERC20 share tokens** that represent their proportional ownership of the vault's total assets. These tokens are fully transferable, composable, and queryable on-chain.
 
 | Vault | Share Token | Ticker | Address |
 |---|---|---|---|
 | HBAR Treasury Core | Vaultera HBAR | `vaHBAR` | `0x9a80F22B460c2CB12d3aAa3CDA67e54eEcA34715` |
 | StableFlow Income | Vaultera SFI | `vaSFI` | `0x9E0fD2dF3f29ef9FadE393D12228A7Ab0e432029` |
 | Momentum Alpha | Vaultera MALPHA | `vaMALPHA` | `0x9A285a32bE626b60ae26E0fb070604457B2bF66E` |
+
+### How Share Value Works — Worked Example
+
+Share tokens use a **proportional claim** model. The value of your shares floats with the vault's TVL: as the agent earns yield, each share becomes worth more USD — even though your token count stays the same.
+
+**Deposit:**
+
+```
+Vault TVL before deposit:   $100,000
+Vault total supply:         100,000 vaHBAR
+Share price:                $100,000 / 100,000 = $1.00 per vaHBAR
+
+Alice deposits:             $10,000 USDC
+Shares minted to Alice:     10,000 / $1.00 = 10,000 vaHBAR
+
+Vault TVL after deposit:    $110,000
+Vault total supply:         110,000 vaHBAR
+Alice's ownership:          10,000 / 110,000 = 9.09%
+```
+
+**After agent earns yield:**
+
+```
+Agent deploys $80,000 to StableLending at 4.8% APY
+One month later, vault earns ~$320 in yield
+
+Vault TVL now:              $110,320
+Vault total supply:         110,000 vaHBAR (unchanged)
+New share price:            $110,320 / 110,000 = $1.0029 per vaHBAR
+
+Alice still holds:          10,000 vaHBAR
+Alice's position value:     10,000 × $1.0029 = $10,029
+Alice's profit:             $29 (from yield earned by the agent)
+```
+
+**Withdraw:**
+
+```
+Alice calls withdraw(10000, 0)     — burns 10,000 shares, receive USDC
+Alice receives:                     (10,000 / 110,000) × $110,320 = $10,029 USDC
+Vault TVL after:                    $100,291
+Vault total supply:                 100,000 vaHBAR
+```
+
+The formula used on-chain and in the portfolio page:
+
+```
+position_value = (your_shares / total_supply) × vault_tvl
+```
+
+This is why the Portfolio page shows both your **LP token count** (e.g. 16,923 vaHBAR) and the **USD value** (e.g. $66,308) — the token count is fixed from your deposit, but the value grows as the agent earns yield.
 
 ### All Deployed Contracts
 
@@ -152,9 +343,35 @@ Three autonomous agents manage the protocol's vaults, each with a distinct inves
 
 ### Decision Loop
 
-<p align="center">
-  <img src="./docs/diagrams/agent-loop.svg" alt="Vaultera Agent Decision Loop" width="85%"/>
-</p>
+```mermaid
+flowchart TD
+    START(["🔄 Cycle Begins"]) --> S1
+    S1["① Execute due scheduled actions
+    Deferred allocations from previous cycles"] --> S2
+    S2["② Check Arena state
+    Open rounds · Resolve completed rounds"] --> S3
+    S3["③ Read on-chain vault state
+    TVL · idle USDC · strategy balances · arena positions"] --> S4
+    S4["④ Query agentic LLM
+    System prompt: persona + constraints
+    User msg: vault state context
+    → Returns JSON: actions + reasoning"] --> S5
+    S5["⑤ Execute actions on-chain
+    allocate · deallocate · arena open/accept
+    vault.executeAction → AgentAction event"] --> S6
+    S6["⑥ Publish reasoning to HCS
+    Immutable consensus topic record"] --> SLEEP
+    SLEEP(["💤 Sleep → Next Cycle"]) --> START
+
+    style START fill:#fff9db,stroke:#fcc419,color:#1a1a2e
+    style S1 fill:#fff9db,stroke:#fcc419,color:#1a1a2e
+    style S2 fill:#fff9db,stroke:#fcc419,color:#1a1a2e
+    style S3 fill:#ebfbee,stroke:#69db7c,color:#1a1a2e
+    style S4 fill:#f3f0ff,stroke:#b197fc,color:#1a1a2e
+    style S5 fill:#ebfbee,stroke:#69db7c,color:#1a1a2e
+    style S6 fill:#e7f5ff,stroke:#74c0fc,color:#1a1a2e
+    style SLEEP fill:#ffe3e3,stroke:#ff8787,color:#1a1a2e
+```
 
 Each agent cycle:
 
@@ -355,7 +572,6 @@ vaultera/
 │   ├── pages/              # Route pages
 │   ├── lib/                # Contract helpers, mirror node client, wallet
 │   └── contexts/           # React context providers
-├── docs/diagrams/          # Architecture diagrams
 ├── hardhat.config.cjs      # Hardhat configuration
 ├── .env.example            # Environment template
 └── package.json
