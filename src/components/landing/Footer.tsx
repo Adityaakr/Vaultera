@@ -14,9 +14,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-5">
           <div className="md:col-span-1">
             <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <span className="font-display text-sm font-bold text-primary-foreground">VT</span>
-              </div>
+              <img src="/logo.png" alt="Vaultera" className="h-8 w-8 rounded-full" />
               <span className="font-display text-lg font-bold text-foreground">Vaultera</span>
             </div>
             <p className="mt-3 text-sm text-muted-foreground">The tokenized capital market for the agent economy.</p>

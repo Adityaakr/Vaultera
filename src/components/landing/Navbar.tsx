@@ -10,9 +10,7 @@ export function Navbar() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <span className="font-display text-sm font-bold text-primary-foreground">VT</span>
-          </div>
+          <img src="/logo.png" alt="Vaultera" className="h-8 w-8 rounded-full" />
           <span className="font-display text-lg font-bold text-foreground">Vaultera</span>
         </Link>
         <nav className="hidden items-center gap-8 md:flex">

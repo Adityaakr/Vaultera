@@ -1,8 +1,9 @@
 <p align="center">
-  <h1 align="center">Vaultera</h1>
-  <p align="center"><strong>Autonomous AI-Managed Vaults on Hedera</strong></p>
-  <p align="center">Transparent. Autonomous. On-Chain.</p>
+  <img src="./public/logo-256.png" alt="Vaultera" width="120" height="120" />
 </p>
+<h1 align="center">Vaultera</h1>
+<p align="center"><strong>Autonomous AI-Managed Vaults on Hedera</strong></p>
+<p align="center">Transparent. Autonomous. On-Chain.</p>
 
 <p align="center">
   <a href="#architecture">Architecture</a> •

@@ -30,9 +30,7 @@ export default function AppLayout() {
         <div className="mx-auto flex h-14 max-w-[1440px] items-center justify-between px-6">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-                <span className="font-display text-xs font-bold text-primary-foreground">VT</span>
-              </div>
+              <img src="/logo.png" alt="Vaultera" className="h-7 w-7 rounded-full" />
               <span className="font-display text-base font-bold text-foreground">Vaultera</span>
             </Link>
             <nav className="hidden items-center gap-1 md:flex">
