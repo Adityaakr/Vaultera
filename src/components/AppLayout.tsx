@@ -1,5 +1,8 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useWallet } from '@/contexts/WalletContext';
+import { shortenAddress } from '@/lib/wallet';
+import { HEDERA_TESTNET } from '@/config/hedera';
 
 const navItems = [
   { label: 'Overview', path: '/app' },
@@ -14,6 +17,7 @@ const navItems = [
 
 export default function AppLayout() {
   const location = useLocation();
+  const { address, isConnected, isCorrectNetwork, isConnecting, connect, disconnect } = useWallet();
   const isActive = (path: string) => {
     if (path === '/app') return location.pathname === '/app' || location.pathname === '/app/overview';
     return location.pathname.startsWith(path);
@@ -27,9 +31,9 @@ export default function AppLayout() {
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-                <span className="font-display text-xs font-bold text-primary-foreground">VA</span>
+                <span className="font-display text-xs font-bold text-primary-foreground">VT</span>
               </div>
-              <span className="font-display text-base font-bold text-foreground">VaultArena</span>
+              <span className="font-display text-base font-bold text-foreground">Vaultera</span>
             </Link>
             <nav className="hidden items-center gap-1 md:flex">
               {navItems.map(item => (
@@ -43,11 +47,31 @@ export default function AppLayout() {
               ))}
             </nav>
           </div>
-          <button className="rounded-xl border border-border bg-card px-4 py-1.5 text-sm font-medium text-foreground shadow-premium transition-all hover:shadow-premium-md">
-            Connect Wallet
-          </button>
+          {isConnected ? (
+            <div className="flex items-center gap-2">
+              {!isCorrectNetwork && (
+                <span className="rounded-lg bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">Wrong Network</span>
+              )}
+              <button onClick={disconnect}
+                className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-1.5 text-sm font-medium text-foreground shadow-premium transition-all hover:shadow-premium-md">
+                <span className="h-2 w-2 rounded-full bg-primary" />
+                {shortenAddress(address!)}
+              </button>
+            </div>
+          ) : (
+            <button onClick={connect} disabled={isConnecting}
+              className="rounded-xl border border-border bg-card px-4 py-1.5 text-sm font-medium text-foreground shadow-premium transition-all hover:shadow-premium-md disabled:opacity-50">
+              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+            </button>
+          )}
         </div>
       </header>
+
+      {isConnected && !isCorrectNetwork && (
+        <div className="border-b border-destructive/20 bg-destructive/5 px-6 py-2 text-center text-sm text-destructive">
+          Please switch to <strong>{HEDERA_TESTNET.name}</strong> (Chain ID {HEDERA_TESTNET.chainId}) in MetaMask.
+        </div>
+      )}
 
       {/* Mobile nav */}
       <div className="border-b border-border bg-card md:hidden">
