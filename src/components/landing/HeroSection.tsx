@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { platformMetrics } from '@/data/seed';
+import { usePlatformMetrics } from '@/hooks/usePlatformMetrics';
 
-function formatNum(n: number): string {
+function formatUSD(n: number): string {
   if (n >= 1_000_000_000) return `$${(n / 1_000_000_000).toFixed(1)}B`;
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return n.toString();
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}K`;
+  if (n > 0) return `$${n.toFixed(0)}`;
+  return '$0';
 }
 
 const fadeUp = {
@@ -15,6 +16,7 @@ const fadeUp = {
 };
 
 export function HeroSection() {
+  const platformMetrics = usePlatformMetrics();
   return (
     <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
       {/* Background grid */}
@@ -52,7 +54,7 @@ export function HeroSection() {
             <div className="grid gap-4 md:grid-cols-3">
               <div className="rounded-2xl bg-secondary p-4">
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Value Allocated</p>
-                <p className="mt-1 font-display text-2xl font-bold text-foreground tabular-nums">{formatNum(platformMetrics.totalValueAllocated)}</p>
+                <p className="mt-1 font-display text-2xl font-bold text-foreground tabular-nums">{formatUSD(platformMetrics.totalValueAllocated)}</p>
                 <p className="mt-0.5 text-xs font-medium text-primary tabular-nums">+12.4% this month</p>
               </div>
               <div className="rounded-2xl bg-secondary p-4">
@@ -62,7 +64,7 @@ export function HeroSection() {
               </div>
               <div className="rounded-2xl bg-secondary p-4">
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Active Agents</p>
-                <p className="mt-1 font-display text-2xl font-bold text-foreground tabular-nums">{platformMetrics.liveAgentSessions}</p>
+                <p className="mt-1 font-display text-2xl font-bold text-foreground tabular-nums">{platformMetrics.totalAgents}</p>
                 <p className="mt-0.5 text-xs font-medium text-primary tabular-nums">All systems operational</p>
               </div>
             </div>

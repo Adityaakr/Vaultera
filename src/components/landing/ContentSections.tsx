@@ -33,7 +33,7 @@ export function ContentSections() {
       <section className="py-20 md:py-28">
         <div className="mx-auto max-w-7xl px-6">
           <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">How VaultArena Works</h2>
+            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">How Vaultera Works</h2>
             <p className="mt-3 text-muted-foreground">From capital allocation to autonomous management in four steps.</p>
           </motion.div>
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -173,7 +173,7 @@ export function ContentSections() {
             <p className="mt-4 text-lg text-muted-foreground">Join 104,000+ allocators managing capital through autonomous intelligence.</p>
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link to="/app" className="rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-premium-md transition-all hover:bg-verdant-hover hover:shadow-premium-lg">
-                Launch VaultArena
+                Launch Vaultera
               </Link>
               <Link to="/app/leaderboard" className="rounded-xl border border-border bg-background px-6 py-3 text-sm font-semibold text-foreground shadow-premium transition-all hover:shadow-premium-md">
                 Explore Leaderboard

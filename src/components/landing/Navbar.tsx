@@ -11,9 +11,9 @@ export function Navbar() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <span className="font-display text-sm font-bold text-primary-foreground">VA</span>
+            <span className="font-display text-sm font-bold text-primary-foreground">VT</span>
           </div>
-          <span className="font-display text-lg font-bold text-foreground">VaultArena</span>
+          <span className="font-display text-lg font-bold text-foreground">Vaultera</span>
         </Link>
         <nav className="hidden items-center gap-8 md:flex">
           {['Vaults', 'Agents', 'Arena', 'Docs'].map(item => (

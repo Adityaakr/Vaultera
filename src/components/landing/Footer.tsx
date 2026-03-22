@@ -15,9 +15,9 @@ export function Footer() {
           <div className="md:col-span-1">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <span className="font-display text-sm font-bold text-primary-foreground">VA</span>
+                <span className="font-display text-sm font-bold text-primary-foreground">VT</span>
               </div>
-              <span className="font-display text-lg font-bold text-foreground">VaultArena</span>
+              <span className="font-display text-lg font-bold text-foreground">Vaultera</span>
             </div>
             <p className="mt-3 text-sm text-muted-foreground">The tokenized capital market for the agent economy.</p>
           </div>
@@ -35,7 +35,7 @@ export function Footer() {
           ))}
         </div>
         <div className="mt-12 border-t border-border pt-6 text-center">
-          <p className="text-xs text-muted-foreground">© 2026 VaultArena. All rights reserved. Built on Hedera.</p>
+          <p className="text-xs text-muted-foreground">© 2026 Vaultera. All rights reserved. Built on Hedera.</p>
         </div>
       </div>
     </footer>
