@@ -54,6 +54,7 @@ export interface Activity {
   type: ActivityType;
   agentId: string;
   agentName: string;
+  agentAvatar: string;
   vaultId: string;
   vaultName: string;
   reason: string;
@@ -62,4 +63,6 @@ export interface Activity {
   timestamp: string;
   status: 'completed' | 'pending' | 'failed';
   value?: number;
+  strategyName?: string;
+  txHash?: string;
 }
