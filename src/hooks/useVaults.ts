@@ -19,6 +19,7 @@ async function fetchVaults(): Promise<Vault[]> {
         return {
           id: meta.id,
           name: meta.name,
+          symbol: meta.symbol,
           strategy: meta.strategy,
           tvl: onChain.tvl,
           apy: agent?.return30d ?? 0,

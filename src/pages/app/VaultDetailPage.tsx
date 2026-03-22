@@ -129,8 +129,12 @@ export default function VaultDetailPage() {
       <div className="flex items-start justify-between">
         <div>
           <Link to="/app/vaults" className="text-sm text-muted-foreground hover:text-foreground">← Back to Vaults</Link>
-          <h1 className="mt-2 font-display text-2xl font-bold text-foreground">{vault.name}</h1>
-          <div className="mt-1 flex items-center gap-3">
+          <div className="mt-2 flex items-center gap-3">
+            <h1 className="font-display text-2xl font-bold text-foreground">{vault.name}</h1>
+            <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-bold tracking-wide text-primary">{vault.symbol}</span>
+          </div>
+          <p className="mt-0.5 text-xs text-muted-foreground">{vault.strategy}</p>
+          <div className="mt-1.5 flex items-center gap-3">
             <StatusPill status={vault.status} />
             <span className="text-sm text-muted-foreground">{vault.category}</span>
             <a href={`${HEDERA_TESTNET.explorerUrl}/contract/${VAULT_ADDRESSES[vault.id]}`}
@@ -140,8 +144,6 @@ export default function VaultDetailPage() {
           </div>
         </div>
       </div>
-
-      <p className="text-sm text-muted-foreground">{vault.strategy}</p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard label="TVL" value={formatUSD(vault.tvl)} change="Live on-chain (USD)" changeType="positive" />

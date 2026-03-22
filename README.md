@@ -68,7 +68,7 @@ The system is composed of three layers:
   <img src="./docs/diagrams/data-flow.svg" alt="Vaultera Data Flow" width="85%"/>
 </p>
 
-1. **Users deposit** USDC, vaUSD, or native HBAR into a vault. The vault mints ERC20 share tokens proportional to the USD value deposited.
+1. **Users deposit** USDC, vaUSD, or native HBAR into a vault. The vault mints tokenized share tokens (e.g. `vaHBAR`, `vaSFI`, `vaMALPHA`) proportional to the USD value deposited. These shares are standard ERC20 tokens — transferable, composable, and queryable on-chain.
 2. **The AI agent wakes up** on a continuous cycle (configurable interval). It reads the vault's on-chain state: TVL, idle balance, deployed capital, strategy allocations, and open arena rounds.
 3. **The agent queries its LLM backend** with a structured prompt containing its persona, risk constraints, and the current vault context. The model returns a JSON response with actions and reasoning.
 4. **Actions are executed on-chain** — strategy allocations, deallocations, arena stakes — and the agent calls `executeAction()` which emits an immutable `AgentAction` event.
@@ -117,16 +117,23 @@ An adversarial staking mechanism where vaults compete head-to-head:
 - **USDC** — Mintable test stablecoin with capped supply
 - **vaUSD (VaultArenaUSD)** — Wrapped stablecoin layer with 1:1 USDC parity and authorized vault minting
 
-### Deployed Addresses
+### Tokenized Vault Shares
+
+Each vault mints an ERC20 share token that represents a user's proportional claim on the vault's assets. These tokens are fully transferable and composable with other DeFi protocols.
+
+| Vault | Share Token | Ticker | Address |
+|---|---|---|---|
+| HBAR Treasury Core | Vaultera HBAR | `vaHBAR` | `0x9a80F22B460c2CB12d3aAa3CDA67e54eEcA34715` |
+| StableFlow Income | Vaultera SFI | `vaSFI` | `0x9E0fD2dF3f29ef9FadE393D12228A7Ab0e432029` |
+| Momentum Alpha | Vaultera MALPHA | `vaMALPHA` | `0x9A285a32bE626b60ae26E0fb070604457B2bF66E` |
+
+### All Deployed Contracts
 
 | Contract | Address |
 |---|---|
 | USDC | `0xFD5781032DBA8d0B5bcB3D748B7eeB7a04645c58` |
 | vaUSD | `0x18F1C2774e9258B7f2A1cFdd4C12153Ce1eE4000` |
 | Arena | `0x0369CBc3AeCb15958B21F0D09d52687eC531af7C` |
-| Vault 1 — HBAR Treasury Core | `0x9a80F22B460c2CB12d3aAa3CDA67e54eEcA34715` |
-| Vault 2 — StableFlow Income | `0x9E0fD2dF3f29ef9FadE393D12228A7Ab0e432029` |
-| Vault 3 — Momentum Alpha | `0x9A285a32bE626b60ae26E0fb070604457B2bF66E` |
 | StableLending Strategy | `0xDd24ca681945b9CBBFF0cCA4DB8921C074aB4249` |
 | MomentumPool Strategy | `0x0703507889DA42464719ca6769e47FA8A195a202` |
 | YieldFarm Strategy | `0x888b9514f268AEE82dD47EF1Fde7909C511A40A5` |
@@ -137,11 +144,11 @@ An adversarial staking mechanism where vaults compete head-to-head:
 
 Three autonomous agents manage the protocol's vaults, each with a distinct investment personality:
 
-| Agent | Strategy Style | Risk Profile | Manages |
-|---|---|---|---|
-| **Atlas** | Conservative Macro | Low | HBAR Treasury Core |
-| **Meridian** | Dynamic Momentum | Moderate | Momentum Alpha |
-| **Echo** | Adaptive Yield | Low | StableFlow Income |
+| Agent | Strategy Style | Risk Profile | Vault | Token |
+|---|---|---|---|---|
+| **Atlas** | Conservative Macro | Low | HBAR Treasury Core | `vaHBAR` |
+| **Meridian** | Dynamic Momentum | Moderate | Momentum Alpha | `vaMALPHA` |
+| **Echo** | Adaptive Yield | Low | StableFlow Income | `vaSFI` |
 
 ### Decision Loop
 

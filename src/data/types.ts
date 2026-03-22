@@ -6,6 +6,7 @@ export type ActivityType = 'rebalance' | 'rotate' | 'allocate' | 'harvest' | 'he
 export interface Vault {
   id: string;
   name: string;
+  symbol: string;
   strategy: string;
   tvl: number;
   apy: number;

@@ -24,7 +24,10 @@ export function VaultCard({ vault, className }: VaultCardProps) {
     )}>
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors">{vault.name}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-display text-base font-semibold text-foreground group-hover:text-primary transition-colors">{vault.name}</h3>
+            <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-primary">{vault.symbol}</span>
+          </div>
           <p className="mt-0.5 text-xs text-muted-foreground">{vault.category}</p>
         </div>
         <StatusPill status={vault.status} />
