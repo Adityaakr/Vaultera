@@ -1,12 +1,13 @@
 import { cn } from '@/lib/utils';
 import type { Vault } from '@/data/types';
-import { agents } from '@/data/seed';
+import { AGENT_META } from '@/config/agents';
 import { Link } from 'react-router-dom';
 
 function formatTVL(tvl: number): string {
-  if (tvl >= 1_000_000_000) return `$${(tvl / 1_000_000_000).toFixed(1)}B`;
-  if (tvl >= 1_000_000) return `$${(tvl / 1_000_000).toFixed(0)}M`;
-  return `$${(tvl / 1_000).toFixed(0)}K`;
+  if (tvl >= 1_000_000) return `$${(tvl / 1_000_000).toFixed(1)}M`;
+  if (tvl >= 1_000) return `$${(tvl / 1_000).toFixed(1)}K`;
+  if (tvl > 0) return `$${tvl.toFixed(0)}`;
+  return '$0';
 }
 
 interface VaultCardProps {
@@ -15,7 +16,7 @@ interface VaultCardProps {
 }
 
 export function VaultCard({ vault, className }: VaultCardProps) {
-  const agent = agents.find(a => a.id === vault.managingAgentId);
+  const agent = AGENT_META[vault.managingAgentId];
   return (
     <Link to={`/app/vaults/${vault.id}`} className={cn(
       "group block rounded-2xl border border-border bg-card p-5 shadow-premium transition-all hover:shadow-premium-md hover:border-primary/30",

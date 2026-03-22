@@ -2,11 +2,14 @@ import { cn } from '@/lib/utils';
 import type { Agent } from '@/data/types';
 import { StatusPill } from './VaultCard';
 import { Link } from 'react-router-dom';
+import { useAgentLastAction, timeAgoShort } from '@/hooks/useAgentLastAction';
 
 function formatCapital(v: number): string {
   if (v >= 1_000_000_000) return `$${(v / 1_000_000_000).toFixed(1)}B`;
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(0)}M`;
-  return `$${(v / 1_000).toFixed(0)}K`;
+  if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
+  if (v > 0) return `$${v.toFixed(0)}`;
+  return '$0';
 }
 
 interface AgentCardProps {
@@ -16,6 +19,10 @@ interface AgentCardProps {
 }
 
 export function AgentCard({ agent, rank, className }: AgentCardProps) {
+  const { data: lastTs } = useAgentLastAction(agent.id);
+  const lastAction = timeAgoShort(lastTs);
+  const isRecent = lastTs ? (Date.now() / 1000 - Number(lastTs.split('.')[0])) < 300 : false;
+
   return (
     <Link to={`/app/agents/${agent.id}`} className={cn(
       "group block rounded-2xl border border-border bg-card p-5 shadow-premium transition-all hover:shadow-premium-md hover:border-primary/30",
@@ -58,6 +65,10 @@ export function AgentCard({ agent, rank, className }: AgentCardProps) {
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Trust</p>
           <p className="text-sm font-semibold tabular-nums text-foreground">{agent.trustScore}%</p>
         </div>
+      </div>
+      <div className="mt-3 flex items-center gap-1.5 border-t border-border pt-3">
+        <span className={cn("h-1.5 w-1.5 rounded-full", isRecent ? "bg-primary animate-pulse" : "bg-muted-foreground/30")} />
+        <span className="text-[10px] text-muted-foreground">Last action: {lastAction}</span>
       </div>
     </Link>
   );
