@@ -1,4 +1,4 @@
-import { agents } from '@/data/seed';
+import { useAgents } from '@/hooks/useAgents';
 import { StatusPill } from '@/components/VaultCard';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
@@ -14,8 +14,9 @@ function formatCapital(v: number): string {
 type SortKey = 'return30d' | 'sharpeRatio' | 'trustScore' | 'capitalManaged' | 'followers';
 
 export default function LeaderboardPage() {
+  const { data: agents } = useAgents();
   const [sortBy, setSortBy] = useState<SortKey>('return30d');
-  const sorted = [...agents].sort((a, b) => {
+  const sorted = [...(agents ?? [])].sort((a, b) => {
     const av = a[sortBy], bv = b[sortBy];
     return typeof av === 'number' && typeof bv === 'number' ? bv - av : 0;
   });

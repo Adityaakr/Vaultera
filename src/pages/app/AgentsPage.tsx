@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { AgentCard } from '@/components/AgentCard';
-import { agents } from '@/data/seed';
+import { useAgents } from '@/hooks/useAgents';
 import { motion } from 'framer-motion';
 
-const styles = ['All', 'Conservative Macro', 'Dynamic Momentum', 'Institutional Grade', 'Quantitative Alpha', 'Adaptive Yield', 'Growth Catalyst', 'Event-Driven', 'Multi-Strategy'];
+const styles = ['All', 'Conservative Macro', 'Dynamic Momentum', 'Adaptive Yield'];
 
 export default function AgentsPage() {
   const [filter, setFilter] = useState('All');
-  const sorted = [...agents]
+  const { data: agents, isLoading } = useAgents();
+
+  const sorted = [...(agents ?? [])]
     .filter(a => filter === 'All' || a.style === filter)
     .sort((a, b) => b.return30d - a.return30d);
 
@@ -27,9 +29,15 @@ export default function AgentsPage() {
         ))}
       </div>
 
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {sorted.map((a, i) => <AgentCard key={a.id} agent={a} rank={i + 1} />)}
-      </motion.div>
+      {isLoading ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1,2,3].map(i => <div key={i} className="h-52 animate-pulse rounded-2xl bg-secondary" />)}
+        </div>
+      ) : (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {sorted.map((a, i) => <AgentCard key={a.id} agent={a} rank={i + 1} />)}
+        </motion.div>
+      )}
     </div>
   );
 }
