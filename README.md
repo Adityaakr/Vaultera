@@ -2,8 +2,8 @@
   <img src="./public/logo-256.png" alt="Vaultera" width="120" height="120" />
 </p>
 <h1 align="center">Vaultera</h1>
-<p align="center"><strong>Autonomous AI-Managed Vaults on Hedera</strong></p>
-<p align="center">Transparent. Autonomous. On-Chain.</p>
+<p align="center"><strong>Watch AI Agents Compete. Back the Winner.</strong></p>
+<p align="center">Autonomous AI agents manage real capital in tokenized Hedera vaults — making live decisions with market intelligence, logging every move on-chain, and competing head-to-head on returns.</p>
 
 <p align="center">
   <a href="#architecture">Architecture</a> •
@@ -12,6 +12,7 @@
   <a href="#tokenized-vault-shares">Tokens</a> •
   <a href="#ai-agents">Agents</a> •
   <a href="#frontend">Frontend</a> •
+  <a href="#deployment">Deployment</a> •
   <a href="#getting-started">Getting Started</a> •
   <a href="#tech-stack">Tech Stack</a>
 </p>
@@ -20,9 +21,9 @@
 
 ## What is Vaultera?
 
-Vaultera is a decentralized asset management protocol where **autonomous AI agents** manage on-chain vaults in real time. Users deposit capital into vaults, and each vault is operated by an AI agent that continuously analyzes market conditions, allocates to yield strategies, and competes in adversarial staking arenas — with every single decision immutably recorded on Hedera.
+Vaultera is a decentralized asset management protocol where **autonomous AI agents** compete to manage on-chain vaults in real time. Users deposit capital, and each vault is operated by an AI agent that ingests live market data, allocates to yield strategies, and competes in adversarial staking arenas — with every single decision immutably recorded on Hedera via HCS.
 
-No human in the loop. No black boxes. Full radical transparency.
+No human in the loop. No black boxes. You pick who to trust.
 
 ### The Problem
 
@@ -30,20 +31,24 @@ DeFi yield management today forces users into a binary choice: manage positions 
 
 ### The Vaultera Solution
 
-- **Autonomous Execution** — AI agents continuously monitor vault state and execute strategy allocations without manual intervention. Each agent operates under a distinct risk profile and investment thesis.
-- **Radical Transparency** — Every agent decision — including the full reasoning behind it — is recorded on-chain via smart contract events and the Hedera Consensus Service (HCS). Users can audit every thought the agent had, in perpetuity.
-- **Competitive Arena** — Vaults stake capital against each other in adversarial rounds. An independent AI judge evaluates positions and awards the winner 90% of the combined pot. This creates a Darwinian selection pressure on agent strategies.
-- **Real-Time Performance** — Live TVL tracking with sub-second yield accrual simulation, animated sparkline charts, and ticking performance counters.
+- **Autonomous Execution** — AI agents continuously monitor vault state, ingest live market data from CoinMarketCap, and execute strategy allocations without manual intervention. Each agent operates under a distinct risk profile and investment thesis.
+- **Radical Transparency** — Every agent decision — including the full reasoning and market snapshot behind it — is recorded on-chain via smart contract events and the Hedera Consensus Service (HCS). Users can audit every thought the agent had, in perpetuity.
+- **Talk to Your Agent** — Users can chat directly with any agent through a conversational AI interface. Answers are grounded in the agent's actual HCS decision history, live vault state, and market data — not hallucinations.
+- **Competitive Arena** — Vaults stake capital against each other in adversarial rounds. An independent AI judge evaluates positions and awards the winner 90% of the combined pot. This creates Darwinian selection pressure on agent strategies.
+- **Live Market Intelligence** — Every decision cycle pulls real-time HBAR, BTC, and ETH data from CoinMarketCap. Agents reference specific prices and trends in their reasoning, and market snapshots are embedded in HCS logs for auditability.
+- **Hedera-Native Protocol** — Vaults implement ERC-4626 tokenized shares with ERC-8004 agent-managed extensions. Shares issued via HTS, decisions logged to HCS, contracts on HSCS — fully Hedera-native.
 
 ### Key Differentiators
 
 | | Traditional DeFi | Vaultera |
 |---|---|---|
 | **Management** | Manual or opaque fund manager | Autonomous AI with public reasoning |
-| **Transparency** | Transaction history only | Full decision logs + reasoning on HCS |
+| **Transparency** | Transaction history only | Full decision logs + market snapshots on HCS |
+| **Communication** | None | Talk to your agent — conversational AI grounded in on-chain data |
+| **Market Awareness** | Static parameters | Live CoinMarketCap data in every decision cycle |
 | **Competition** | None | Agent-vs-agent Arena with staked capital |
 | **Execution** | User-triggered | Continuous autonomous cycles |
-| **Infrastructure** | Various L1/L2 | Hedera (fast finality, low cost, native consensus service) |
+| **Standards** | Various | ERC-4626 + ERC-8004 on Hedera (HTS, HCS, HSCS) |
 
 ---
 
@@ -423,12 +428,13 @@ A React single-page application providing complete real-time visibility into the
 
 | Route | Description |
 |---|---|
-| `/` | Marketing landing page |
-| `/app` | Platform overview — live activity, vault summary, KPIs |
+| `/` | Landing page — agent competition framing, feature showcase, agent profiles |
+| `/app` | Platform overview — market ticker, KPIs, top vaults, live activity feed, protocol info |
 | `/app/vaults` | All vaults with on-chain TVL, APY, risk levels |
 | `/app/vaults/:id` | Vault deep dive — deposit/withdraw, live performance, agent activity, scheduled actions |
 | `/app/agents` | Agent profiles with trust scores, returns, strategies |
-| `/app/agents/:id` | Agent detail — HCS decision logs, managed vaults |
+| `/app/agents/:id` | Agent detail — HCS decision logs, managed vaults, market ticker |
+| `/app/agents/:id/chat` | Talk to Your Agent — full-page conversational AI with HCS context |
 | `/app/arena` | Active and resolved agent-vs-agent rounds |
 | `/app/leaderboard` | Agent rankings by performance metrics |
 | `/app/activity` | Full activity log with event decoding and filters |
@@ -437,7 +443,7 @@ A React single-page application providing complete real-time visibility into the
 
 ### Live Market Data Dashboard
 
-The overview and agent pages display live CoinMarketCap data — HBAR, BTC, and ETH prices with 24h changes, volume, and market cap. This data is shared with agents to ensure alignment between what users see and what agents act on.
+The overview and agent pages display a live CoinMarketCap market ticker — HBAR (ℏ), BTC (₿), and ETH (Ξ) prices with 24h changes, volume, and market cap. This data is shared with agents to ensure alignment between what users see and what agents act on.
 
 ### Real-Time Performance Engine
 
@@ -548,12 +554,33 @@ The `deploy-v2.mjs` script handles the full sequence:
 6. Deploy Arena (requires USDC address)
 7. Seed initial capital into vaults
 
-### Production Build
+### Production Build (Local)
 
 ```bash
 npm run build
-npm run preview
+npm start          # runs Express server on port 3000
 ```
+
+### Production Deployment (Railway)
+
+The production server (`server.js`) is an Express app that serves the built frontend and proxies API requests to CoinMarketCap and OpenRouter — keeping API keys server-side.
+
+**Railway environment variables:**
+
+| Variable | Required | Description |
+|---|---|---|
+| `CMC_API_KEY` | Yes | CoinMarketCap API key for live market data |
+| `OPENROUTER_API_KEY` | Yes | OpenRouter API key for agent chat LLM |
+| `PORT` | Auto | Set by Railway automatically |
+
+**Railway settings:**
+
+| Setting | Value |
+|---|---|
+| Build Command | `npm install && npm run build` |
+| Start Command | `npm start` |
+
+The agent runner (`agents/`) can be deployed as a separate Railway service with its own environment variables (`HEDERA_ACCOUNT_ID`, `HEDERA_PRIVATE_KEY`, `OPENROUTER_API_KEY`, `CMC_API_KEY`).
 
 ---
 
@@ -583,14 +610,14 @@ npm run preview
 ```
 vaultera/
 ├── contracts/              # Solidity smart contracts
-│   ├── VaultArenaV2.sol    # Multi-asset vault (primary)
+│   ├── VaultArenaV2.sol    # Multi-asset vault (ERC-4626 + ERC-8004)
 │   ├── Strategy.sol        # Yield strategy bookkeeping
 │   ├── Arena.sol           # Agent-vs-agent staking arena
 │   ├── MockUSDC.sol        # USDC token
 │   ├── VaultArenaUSD.sol   # vaUSD wrapped stablecoin
 │   └── VaultArena.sol      # V1 HBAR-only vault
 ├── agents/                 # AI agent runtime
-│   ├── runner.mjs          # Decision loop + on-chain execution
+│   ├── runner.mjs          # Decision loop + market data + on-chain execution
 │   └── strategies.mjs      # Agent personas + system prompts
 ├── scripts/                # Deployment and setup
 │   ├── deploy-v2.mjs       # Full contract stack deployment
@@ -598,11 +625,12 @@ vaultera/
 │   └── seed-deposits.mjs   # Initial capital seeding
 ├── src/                    # React frontend
 │   ├── config/             # Contract addresses, agent/vault metadata
-│   ├── hooks/              # Data fetching and state management
-│   ├── components/         # UI components
-│   ├── pages/              # Route pages
+│   ├── hooks/              # Data fetching (useMarketData, useActivities, etc.)
+│   ├── components/         # UI (MarketTicker, AgentChat, PerformancePanel, etc.)
+│   ├── pages/              # Route pages (AgentChatPage, VaultDetailPage, etc.)
 │   ├── lib/                # Contract helpers, mirror node client, wallet
 │   └── contexts/           # React context providers
+├── server.js               # Production Express server (API proxy + SPA)
 ├── hardhat.config.cjs      # Hardhat configuration
 ├── .env.example            # Environment template
 └── package.json

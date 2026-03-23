@@ -24,9 +24,12 @@ export default function AppOverview() {
   const { data: activities } = useActivities();
   const metrics = usePlatformMetrics();
 
-  const topVaults = (vaults ?? []).slice(0, 4);
+  const topVaults = (vaults ?? []).slice(0, 3);
   const topAgents = [...(agents ?? [])].sort((a, b) => b.return30d - a.return30d).slice(0, 4);
   const recentActivity = (activities ?? []).slice(0, 10);
+  const avgTrust = topVaults.length > 0
+    ? Math.round(topVaults.reduce((s, v) => s + v.trustScore, 0) / topVaults.length)
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -44,27 +47,64 @@ export default function AppOverview() {
         <KPICard label="System Uptime" value={`${metrics.systemUptime}%`} change="All systems operational" changeType="positive" />
       </motion.div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3 items-start">
+        {/* Left — vaults + protocol card */}
         <div className="lg:col-span-2">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-lg font-semibold text-foreground">Top Vaults</h2>
             <a href="/app/vaults" className="text-sm font-medium text-primary hover:underline">View all →</a>
           </div>
-          {vLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[1,2,3,4].map(i => <div key={i} className="h-48 animate-pulse rounded-2xl bg-secondary" />)}
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {topVaults.map(v => <VaultCard key={v.id} vault={v} />)}
-            </div>
-          )}
+          <div className="grid gap-4 sm:grid-cols-2 items-start">
+            {vLoading
+              ? [1,2,3,4].map(i => <div key={i} className="h-48 animate-pulse rounded-2xl bg-secondary" />)
+              : (
+                <>
+                  {topVaults.map(v => <VaultCard key={v.id} vault={v} />)}
+                  <div className="rounded-2xl border border-border bg-card p-5 shadow-premium">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-display text-base font-semibold text-foreground">Hedera-Native Protocol</h3>
+                        <p className="mt-0.5 text-xs text-muted-foreground">Tokenized Vault Standard</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-primary">ERC-4626</span>
+                        <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-primary">ERC-8004</span>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground line-clamp-2">Agent-managed vault shares on HTS with immutable decision logs on HCS.</p>
+                    <div className="mt-4 grid grid-cols-3 gap-3">
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Vaults</p>
+                        <p className="text-sm font-semibold text-foreground tabular-nums">{(vaults ?? []).length}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Trust</p>
+                        <p className="text-sm font-semibold text-primary tabular-nums">{avgTrust}%</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Finality</p>
+                        <p className="text-sm font-semibold text-foreground">~3s</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between border-t border-border pt-3">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">HTS</span>
+                        <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">HCS</span>
+                        <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">HSCS</span>
+                      </div>
+                      <span className="text-[10px] font-medium text-muted-foreground/60">HCS-10 coming soon</span>
+                    </div>
+                  </div>
+                </>
+              )
+            }
+          </div>
         </div>
 
-        <div className="rounded-xl border border-border/50 bg-card overflow-hidden flex flex-col">
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 bg-secondary/30">
-            <h2 className="font-display text-sm font-semibold text-foreground flex items-center gap-2">
+        {/* Right — Live Activity */}
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-lg font-semibold text-foreground flex items-center gap-2">
               Live Activity
               <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" /> Live
@@ -72,25 +112,25 @@ export default function AppOverview() {
             </h2>
             <a href="/app/activity" className="text-[11px] font-medium text-primary hover:underline">View all →</a>
           </div>
-          {/* Feed */}
-          <div className="flex-1 p-2 space-y-1.5 overflow-y-auto max-h-[520px]">
-            {recentActivity.length > 0
-              ? recentActivity.map(a => <ActivityFeedItem key={a.id} activity={a} compact />)
-              : (
-                <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
-                  No on-chain activity yet.
-                </div>
-              )
-            }
-          </div>
-          {/* Footer summary */}
-          {(activities ?? []).length > 0 && (
-            <div className="px-4 py-2 border-t border-border/40 bg-secondary/20">
-              <p className="text-[10px] text-muted-foreground text-center tabular-nums">
-                {(activities ?? []).length} total on-chain events · Auto-refreshes every 8s
-              </p>
+          <div className="rounded-xl border border-border/50 bg-card overflow-hidden">
+            <div className="p-2 space-y-1.5 overflow-y-auto max-h-[400px]">
+              {recentActivity.length > 0
+                ? recentActivity.map(a => <ActivityFeedItem key={a.id} activity={a} compact />)
+                : (
+                  <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+                    No on-chain activity yet.
+                  </div>
+                )
+              }
             </div>
-          )}
+            {(activities ?? []).length > 0 && (
+              <div className="px-4 py-1.5 border-t border-border/40 bg-secondary/20">
+                <p className="text-[10px] text-muted-foreground text-center tabular-nums">
+                  {(activities ?? []).length} total on-chain events · Auto-refreshes every 8s
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
