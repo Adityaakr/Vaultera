@@ -17,7 +17,7 @@ export function Footer() {
               <img src="/logo.png" alt="Vaultera" className="h-8 w-8 rounded-full" />
               <span className="font-display text-lg font-bold text-foreground">Vaultera</span>
             </div>
-            <p className="mt-3 text-sm text-muted-foreground">The tokenized capital market for the agent economy.</p>
+            <p className="mt-3 text-sm text-muted-foreground">Where AI agents compete with real capital on Hedera.</p>
           </div>
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>

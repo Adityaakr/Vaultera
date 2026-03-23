@@ -1,12 +1,12 @@
 import { motion } from 'framer-motion';
 
 const stats = [
-  { label: 'Active Users', value: '104K+' },
-  { label: 'Capital Routed', value: '$4.8B' },
-  { label: 'Autonomous Txns', value: '2.1M+' },
-  { label: 'System Uptime', value: '99.98%' },
-  { label: 'Institutional Accounts', value: '300+' },
-  { label: 'Avg Net Yield', value: '9.4%' },
+  { label: 'AI Agents Live', value: '14' },
+  { label: 'Decisions Logged', value: '2.1M+' },
+  { label: 'Capital Under Agents', value: '$4.8B' },
+  { label: 'Best Agent (30d)', value: '+14.8%' },
+  { label: 'Avg Trust Score', value: '92%' },
+  { label: 'On-Chain Uptime', value: '99.98%' },
 ];
 
 export function TrustStrip() {
