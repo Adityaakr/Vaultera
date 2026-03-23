@@ -1,34 +1,45 @@
 import { useMarketData, type TokenQuote } from '@/hooks/useMarketData';
 import { motion } from 'framer-motion';
 
-function fmt(n: number, decimals = 2): string {
-  if (n >= 1e9) return `$${(n / 1e9).toFixed(1)}B`;
-  if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
+function fmtPrice(n: number): string {
   if (n >= 1_000) return `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-  if (n >= 1) return `$${n.toFixed(decimals)}`;
+  if (n >= 1) return `$${n.toFixed(2)}`;
   return `$${n.toFixed(4)}`;
 }
 
-function PctBadge({ value }: { value: number }) {
-  const pos = value >= 0;
+function fmtCompact(n: number): string {
+  if (n >= 1e9) return `$${(n / 1e9).toFixed(2)}B`;
+  if (n >= 1e6) return `$${(n / 1e6).toFixed(1)}M`;
+  return `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+}
+
+function TokenPill({ symbol, icon, quote, accent }: { symbol: string; icon: string; quote: TokenQuote; accent: string }) {
+  const pos = quote.percent_change_24h >= 0;
   return (
-    <span className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${pos ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-      {pos ? '▲' : '▼'} {Math.abs(value).toFixed(2)}%
-    </span>
+    <div className="group flex items-center gap-2.5 transition-colors">
+      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${accent} text-sm font-bold`}>
+        {icon}
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="text-[11px] font-semibold text-foreground">{symbol}</span>
+        <span className="text-[12px] font-bold tabular-nums text-foreground">{fmtPrice(quote.price)}</span>
+        <span className={`text-[10px] font-semibold tabular-nums ${pos ? 'text-emerald-400' : 'text-red-400'}`}>
+          {pos ? '+' : ''}{quote.percent_change_24h.toFixed(2)}%
+        </span>
+      </div>
+    </div>
   );
 }
 
-function TokenCard({ symbol, icon, quote }: { symbol: string; icon: string; quote: TokenQuote }) {
+function Divider() {
+  return <div className="h-4 w-px bg-border/60" />;
+}
+
+function StatItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-secondary/50 px-3.5 py-2.5 min-w-[160px]">
-      <span className="text-lg">{icon}</span>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-foreground">{symbol}</span>
-          <PctBadge value={quote.percent_change_24h} />
-        </div>
-        <p className="text-sm font-bold tabular-nums text-foreground">{fmt(quote.price)}</p>
-      </div>
+    <div className="flex items-center gap-1.5 text-[10px]">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-semibold text-foreground tabular-nums">{value}</span>
     </div>
   );
 }
@@ -38,42 +49,54 @@ export function MarketTicker() {
 
   if (isError || isLoading) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-border bg-card/50 p-3">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="h-2 w-2 rounded-full bg-yellow-500/60 animate-pulse" />
-          {isLoading ? 'Loading live market data...' : 'Market data unavailable'}
-        </div>
+      <div className="flex items-center gap-2 rounded-xl border border-border/50 bg-card/30 px-4 py-2.5">
+        <span className="h-1.5 w-1.5 rounded-full bg-yellow-500/60 animate-pulse" />
+        <span className="text-[11px] text-muted-foreground">
+          {isLoading ? 'Connecting to CoinMarketCap...' : 'Market data unavailable'}
+        </span>
       </div>
     );
   }
 
   const hbar = data!.HBAR;
+  const hbar7dPos = hbar.percent_change_7d >= 0;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -8 }}
+      initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-border bg-card/60 backdrop-blur-sm p-3"
+      transition={{ duration: 0.3 }}
+      className="flex items-center gap-4 rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm px-4 py-2 overflow-x-auto"
     >
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Live Market</span>
-          </div>
-          <span className="text-[10px] text-muted-foreground">via CoinMarketCap</span>
-        </div>
+      {/* Live indicator */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+        </span>
+        <span className="text-[9px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Live</span>
+      </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <TokenCard symbol="HBAR" icon="ℏ" quote={data!.HBAR} />
-          <TokenCard symbol="BTC" icon="₿" quote={data!.BTC} />
-          <TokenCard symbol="ETH" icon="Ξ" quote={data!.ETH} />
-        </div>
+      <Divider />
 
-        <div className="hidden lg:flex items-center gap-4 text-[10px] text-muted-foreground">
-          <span>Vol 24h: <strong className="text-foreground">{fmt(hbar.volume_24h)}</strong></span>
-          <span>MCap: <strong className="text-foreground">{fmt(hbar.market_cap)}</strong></span>
-          <span>7d: <PctBadge value={hbar.percent_change_7d} /></span>
+      {/* Token prices */}
+      <div className="flex items-center gap-4">
+        <TokenPill symbol="HBAR" icon="ℏ" quote={data!.HBAR} accent="bg-foreground/10 text-foreground" />
+        <TokenPill symbol="BTC" icon="₿" quote={data!.BTC} accent="bg-amber-500/10 text-amber-500" />
+        <TokenPill symbol="ETH" icon="Ξ" quote={data!.ETH} accent="bg-blue-500/10 text-blue-500" />
+      </div>
+
+      <Divider />
+
+      {/* HBAR extended stats */}
+      <div className="hidden lg:flex items-center gap-3 shrink-0">
+        <StatItem label="Vol" value={fmtCompact(hbar.volume_24h)} />
+        <StatItem label="MCap" value={fmtCompact(hbar.market_cap)} />
+        <div className="flex items-center gap-1.5 text-[10px]">
+          <span className="text-muted-foreground">7d</span>
+          <span className={`font-semibold tabular-nums ${hbar7dPos ? 'text-emerald-400' : 'text-red-400'}`}>
+            {hbar7dPos ? '+' : ''}{hbar.percent_change_7d.toFixed(2)}%
+          </span>
         </div>
       </div>
     </motion.div>

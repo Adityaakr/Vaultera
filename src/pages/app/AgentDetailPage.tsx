@@ -10,7 +10,6 @@ import { ScheduledActionsPanel } from '@/components/ScheduledActionsPanel';
 import { StatusPill } from '@/components/VaultCard';
 import { HCS_TOPIC_IDS } from '@/config/contracts';
 import { HEDERA_TESTNET } from '@/config/hedera';
-import { AgentChat } from '@/components/AgentChat';
 import { MarketTicker } from '@/components/MarketTicker';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -139,8 +138,30 @@ export default function AgentDetailPage() {
       {/* Market Context */}
       <MarketTicker />
 
-      {/* Talk to Agent — AI Chat with HCS Memory */}
-      {id && <AgentChat agentId={id} />}
+      {/* Talk to Agent — link to full chat page */}
+      <Link to={`/app/agents/${id}/chat`}
+        className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-5 shadow-premium hover:border-primary/30 hover:bg-primary/[0.02] transition-all">
+        <div className="relative">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 font-display text-xl font-bold text-accent">
+            {agent.avatar}
+          </div>
+          <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-emerald-500" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-display text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+            Talk to {agent.name}
+          </h3>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            Ask about strategy, market outlook, or past decisions — backed by on-chain HCS history + live market data
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-muted-foreground group-hover:text-primary transition-colors">
+          <span className="text-xs font-medium hidden sm:block">Open Chat</span>
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </Link>
 
       {/* Scheduled Actions */}
       <ScheduledActionsPanel vaultId={agent.vaultsManaged[0]} />

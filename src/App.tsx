@@ -12,6 +12,7 @@ import VaultsPage from "./pages/app/VaultsPage.tsx";
 import VaultDetailPage from "./pages/app/VaultDetailPage.tsx";
 import AgentsPage from "./pages/app/AgentsPage.tsx";
 import AgentDetailPage from "./pages/app/AgentDetailPage.tsx";
+import AgentChatPage from "./pages/app/AgentChatPage.tsx";
 import ArenaPage from "./pages/app/ArenaPage.tsx";
 import LeaderboardPage from "./pages/app/LeaderboardPage.tsx";
 import ActivityPage from "./pages/app/ActivityPage.tsx";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="vaults/:id" element={<VaultDetailPage />} />
             <Route path="agents" element={<AgentsPage />} />
             <Route path="agents/:id" element={<AgentDetailPage />} />
+            <Route path="agents/:id/chat" element={<AgentChatPage />} />
             <Route path="arena" element={<ArenaPage />} />
             <Route path="leaderboard" element={<LeaderboardPage />} />
             <Route path="activity" element={<ActivityPage />} />
