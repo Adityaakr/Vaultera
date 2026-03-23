@@ -10,11 +10,11 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.static(join(__dirname, 'dist')));
 
 // ─── CoinMarketCap proxy ────────────────────────────────────────────
-app.get('/api/cmc/*', async (req, res) => {
+app.get('/api/cmc/:path(*)', async (req, res) => {
   const cmcKey = process.env.CMC_API_KEY;
   if (!cmcKey) return res.status(503).json({ error: 'CMC_API_KEY not configured' });
 
-  const path = req.path.replace('/api/cmc', '');
+  const path = '/' + (req.params.path || '');
   const qs = new URLSearchParams(req.query).toString();
   const url = `https://pro-api.coinmarketcap.com${path}${qs ? `?${qs}` : ''}`;
 
@@ -28,11 +28,11 @@ app.get('/api/cmc/*', async (req, res) => {
 });
 
 // ─── OpenRouter LLM proxy ───────────────────────────────────────────
-app.post('/api/llm/*', async (req, res) => {
+app.post('/api/llm/:path(*)', async (req, res) => {
   const llmKey = process.env.OPENROUTER_API_KEY;
   if (!llmKey) return res.status(503).json({ error: 'OPENROUTER_API_KEY not configured' });
 
-  const path = req.path.replace('/api/llm', '');
+  const path = '/' + (req.params.path || '');
   const url = `https://openrouter.ai${path}`;
 
   try {
@@ -54,7 +54,7 @@ app.post('/api/llm/*', async (req, res) => {
 });
 
 // ─── SPA fallback ───────────────────────────────────────────────────
-app.get('*', (_req, res) => {
+app.get('/:path(*)', (_req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
