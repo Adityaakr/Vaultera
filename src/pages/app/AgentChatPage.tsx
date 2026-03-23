@@ -89,6 +89,17 @@ function parseSuggestions(text: string): { content: string; suggestions: string[
   return { content, suggestions };
 }
 
+function renderMarkdown(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**'))
+      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    if (part.startsWith('*') && part.endsWith('*'))
+      return <em key={i}>{part.slice(1, -1)}</em>;
+    return part;
+  });
+}
+
 const INITIAL_SUGGESTIONS = [
   "What's your current strategy and why?",
   "How is today's market affecting your decisions?",
@@ -277,8 +288,8 @@ export default function AgentChatPage() {
                       {agent.avatar}
                     </div>
                     <div className="flex-1 min-w-0 space-y-3">
-                      <div className="prose-sm">
-                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                      <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                        {renderMarkdown(msg.content)}
                       </div>
                       <span className="text-[10px] text-muted-foreground">
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
