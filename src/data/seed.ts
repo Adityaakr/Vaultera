@@ -4,7 +4,7 @@ export const agents: Agent[] = [
   {
     id: 'agent-1', name: 'Atlas', style: 'Conservative Macro', strategy: 'Multi-factor risk parity with dynamic hedging across yield-bearing assets',
     confidence: 94, reactionSpeed: '< 200ms', riskProfile: 'low', specialties: ['Treasury Management', 'Yield Optimization', 'Risk Parity'],
-    status: 'monitoring', trustScore: 97, return7d: 1.2, return30d: 4.8, return90d: 14.2, sharpeRatio: 2.41, maxDrawdown: -1.8,
+    status: 'monitoring', trustScore: 97, return7d: 3.6, return30d: 14.8, return90d: 45.2, sharpeRatio: 2.41, maxDrawdown: -1.8,
     capitalManaged: 842_000_000, followers: 12_400, actionsCount: 34_201, vaultsManaged: ['vault-1', 'vault-6'],
     explanation: 'Atlas prioritizes capital preservation with consistent yield generation through diversified exposure and dynamic rebalancing.',
     recentActions: ['Rebalanced HBAR allocation +2.4%', 'Harvested staking yield $12.4K', 'Reduced exposure to volatile pairs'],
@@ -132,7 +132,7 @@ export const agents: Agent[] = [
 export const vaults: Vault[] = [
   {
     id: 'vault-1', name: 'HBAR Treasury Core', strategy: 'Conservative treasury management with diversified HBAR yield', tvl: 1_420_000_000,
-    apy: 6.8, apy7d: 6.2, apy30d: 6.8, apy90d: 7.1, utilization: 87, riskLevel: 'low', riskScore: 12, trustScore: 98,
+    apy: 14.8, apy7d: 13.6, apy30d: 14.8, apy90d: 45.2, utilization: 87, riskLevel: 'low', riskScore: 12, trustScore: 98,
     managingAgentId: 'agent-1', status: 'active', category: 'Treasury',
     allocation: [{ asset: 'HBAR', percentage: 45 }, { asset: 'USDC', percentage: 30 }, { asset: 'HBARX', percentage: 15 }, { asset: 'DAI', percentage: 10 }],
     subscribers: 8_420, createdAt: '2024-03-15',
