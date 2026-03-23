@@ -43,6 +43,8 @@ const LLM_MODEL = USE_OPENAI ? 'gpt-4o-mini' : 'google/gemini-2.0-flash-001';
 const PRIVATE_KEY = process.env.HEDERA_PRIVATE_KEY;
 const HEDERA_ACCOUNT_ID = process.env.HEDERA_ACCOUNT_ID;
 
+const CMC_API_KEY = process.env.CMC_API_KEY;
+
 const MAX_CYCLES = process.argv.includes('--continuous') ? Infinity : 5;
 const FAST_MODE = process.argv.includes('--fast');
 const CYCLE_INTERVAL_MS = FAST_MODE ? 15_000 : 30_000;
@@ -133,6 +135,49 @@ async function publishToHCS(agentId, message) {
   } catch (err) {
     console.warn(`  HCS publish failed: ${err.message}`);
   }
+}
+
+// ─── Market Data (CoinMarketCap) ─────────────────────────────────────
+
+let cachedMarket = null;
+let marketFetchedAt = 0;
+const MARKET_CACHE_MS = 60_000;
+
+async function fetchMarketData() {
+  if (!CMC_API_KEY) return null;
+  if (cachedMarket && Date.now() - marketFetchedAt < MARKET_CACHE_MS) return cachedMarket;
+
+  try {
+    const res = await fetch(
+      'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=HBAR,BTC,ETH&convert=USD',
+      { headers: { 'X-CMC_PRO_API_KEY': CMC_API_KEY, Accept: 'application/json' } }
+    );
+    if (!res.ok) { console.warn(`  CMC API ${res.status}`); return cachedMarket; }
+    const json = await res.json();
+    cachedMarket = json.data;
+    marketFetchedAt = Date.now();
+    return cachedMarket;
+  } catch (err) {
+    console.warn(`  CMC fetch failed: ${err.message}`);
+    return cachedMarket;
+  }
+}
+
+function formatMarketContext(market) {
+  if (!market) return '';
+  const hbar = market.HBAR?.quote?.USD;
+  const btc = market.BTC?.quote?.USD;
+  const eth = market.ETH?.quote?.USD;
+  if (!hbar) return '';
+
+  return `
+=== LIVE MARKET DATA (CoinMarketCap) ===
+HBAR: $${hbar.price?.toFixed(4)} (1h: ${hbar.percent_change_1h?.toFixed(2)}%, 24h: ${hbar.percent_change_24h?.toFixed(2)}%, 7d: ${hbar.percent_change_7d?.toFixed(2)}%)
+  Volume 24h: $${(hbar.volume_24h / 1e6)?.toFixed(1)}M | Market Cap: $${(hbar.market_cap / 1e9)?.toFixed(2)}B
+BTC: $${btc?.price?.toFixed(0)} (24h: ${btc?.percent_change_24h?.toFixed(2)}%)
+ETH: $${eth?.price?.toFixed(0)} (24h: ${eth?.percent_change_24h?.toFixed(2)}%)
+
+Factor these market conditions into your decision. If HBAR shows significant volatility or directional momentum, adjust your strategy allocation accordingly. If the broader crypto market (BTC/ETH) is risk-off, favor conservative strategies.`;
 }
 
 // ─── Vault State ─────────────────────────────────────────────────────
@@ -331,7 +376,7 @@ Respond with ONLY a JSON: { "winner": "A" | "B", "reason": "1 sentence" }`;
 
 // ─── Agent Cycle ─────────────────────────────────────────────────────
 
-async function runAgentCycle(persona, arenaState, cycleNum) {
+async function runAgentCycle(persona, arenaState, cycleNum, marketData) {
   const { id, name, vaultId, systemPrompt } = persona;
   const vaultAddr = VAULT_ADDRESSES[vaultId];
   console.log(`\n[${name}] Cycle ${cycleNum} — vault ${vaultId} (${vaultAddr})`);
@@ -340,6 +385,12 @@ async function runAgentCycle(persona, arenaState, cycleNum) {
     const state = await getVaultState(vaultId);
     console.log(`  TVL: $${state.tvl.toFixed(2)} | Idle: $${state.idle.toFixed(2)} | USDC avail: $${state.availableUSDC.toFixed(2)} | In strategies: $${state.inStrategies.toFixed(2)}`);
     console.log(`  Allocations: ${JSON.stringify(state.stratAllocations)}`);
+
+    const marketContext = formatMarketContext(marketData);
+    if (marketData?.HBAR) {
+      const hp = marketData.HBAR.quote?.USD;
+      console.log(`  Market: HBAR $${hp?.price?.toFixed(4)} (24h: ${hp?.percent_change_24h?.toFixed(2)}%) | BTC $${marketData.BTC?.quote?.USD?.price?.toFixed(0)} | ETH $${marketData.ETH?.quote?.USD?.price?.toFixed(0)}`);
+    }
 
     const acceptableRound = arenaState.openRounds.find(r => r.vaultA.toLowerCase() !== vaultAddr.toLowerCase());
 
@@ -356,6 +407,7 @@ async function runAgentCycle(persona, arenaState, cycleNum) {
 - Strategy allocations: ${JSON.stringify(state.stratAllocations)}
 - LP token supply: ${state.supply.toFixed(2)}
 - Cycle: ${cycleNum}
+${marketContext}
 
 IMPORTANT: You can only allocate up to $${state.availableUSDC.toFixed(0)} USDC to strategies. Do NOT exceed this amount.
 ${scheduledInfo}
@@ -426,8 +478,8 @@ Decide your actions.`;
       )).wait();
     } catch {}
 
-    // Publish reasoning to HCS
-    await publishToHCS(id, {
+    // Publish reasoning to HCS (includes market snapshot for auditability)
+    const hcsPayload = {
       agent: name,
       vault: vaultId,
       cycle: cycleNum,
@@ -436,7 +488,16 @@ Decide your actions.`;
       arena: decision.arena,
       summary: decision.summary,
       timestamp: new Date().toISOString(),
-    });
+    };
+    if (marketData?.HBAR) {
+      const hp = marketData.HBAR.quote?.USD;
+      hcsPayload.market = {
+        hbar: { price: hp?.price, change_24h: hp?.percent_change_24h },
+        btc: { price: marketData.BTC?.quote?.USD?.price },
+        eth: { price: marketData.ETH?.quote?.USD?.price },
+      };
+    }
+    await publishToHCS(id, hcsPayload);
 
   } catch (err) {
     console.error(`  [${name}] Error: ${err.message}`);
@@ -461,15 +522,24 @@ async function main() {
     // Execute any due scheduled actions first
     await executeDueSchedules();
 
+    // Fetch live market data (cached for 60s)
+    const marketData = await fetchMarketData();
+    if (marketData?.HBAR) {
+      const hp = marketData.HBAR.quote?.USD;
+      console.log(`\nMarket: HBAR $${hp?.price?.toFixed(4)} (24h: ${hp?.percent_change_24h?.toFixed(2)}%) | BTC $${marketData.BTC?.quote?.USD?.price?.toFixed(0)} | ETH $${marketData.ETH?.quote?.USD?.price?.toFixed(0)}`);
+    } else {
+      console.log(`\nMarket data: ${CMC_API_KEY ? 'fetch failed' : 'no CMC_API_KEY configured'}`);
+    }
+
     const arenaState = await getArenaState();
     console.log(`Arena: ${arenaState.count} total rounds, ${arenaState.openRounds.length} open, ${arenaState.activeRounds.length} active`);
 
     // Resolve any active arena rounds
     await resolveActiveRounds(arenaState.activeRounds);
 
-    // Run each agent
+    // Run each agent with market context
     for (const persona of AGENT_PERSONAS) {
-      await runAgentCycle(persona, arenaState, cycle);
+      await runAgentCycle(persona, arenaState, cycle, marketData);
     }
 
     const pendingCount = pendingSchedules.filter(s => s.status === 'pending').length;

@@ -10,6 +10,8 @@ import { ScheduledActionsPanel } from '@/components/ScheduledActionsPanel';
 import { StatusPill } from '@/components/VaultCard';
 import { HCS_TOPIC_IDS } from '@/config/contracts';
 import { HEDERA_TESTNET } from '@/config/hedera';
+import { AgentChat } from '@/components/AgentChat';
+import { MarketTicker } from '@/components/MarketTicker';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function formatUSD(v: number): string {
@@ -133,6 +135,12 @@ export default function AgentDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Market Context */}
+      <MarketTicker />
+
+      {/* Talk to Agent — AI Chat with HCS Memory */}
+      {id && <AgentChat agentId={id} />}
 
       {/* Scheduled Actions */}
       <ScheduledActionsPanel vaultId={agent.vaultsManaged[0]} />

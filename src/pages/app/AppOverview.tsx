@@ -7,6 +7,7 @@ import { useVaults } from '@/hooks/useVaults';
 import { useAgents } from '@/hooks/useAgents';
 import { useActivities } from '@/hooks/useActivities';
 import { usePlatformMetrics } from '@/hooks/usePlatformMetrics';
+import { MarketTicker } from '@/components/MarketTicker';
 import { motion } from 'framer-motion';
 
 function formatUSD(n: number): string {
@@ -33,6 +34,8 @@ export default function AppOverview() {
         <h1 className="font-display text-2xl font-bold text-foreground">Overview</h1>
         <p className="text-sm text-muted-foreground">Platform performance and system status — live from Hedera Testnet</p>
       </div>
+
+      <MarketTicker />
 
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard label="Total Value Allocated" value={formatUSD(metrics.totalValueAllocated)} change="Live on-chain (USD)" changeType="positive" />

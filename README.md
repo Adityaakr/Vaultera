@@ -156,10 +156,12 @@ flowchart TD
 
 1. **Users deposit** USDC, vaUSD, or native HBAR into a vault. The vault mints tokenized share tokens (e.g. `vaHBAR`, `vaSFI`, `vaMALPHA`) proportional to the USD value deposited. These shares are standard ERC20 tokens — transferable, composable, and queryable on-chain.
 2. **The AI agent wakes up** on a continuous cycle (configurable interval). It reads the vault's on-chain state: TVL, idle balance, deployed capital, strategy allocations, and open arena rounds.
-3. **The agent queries its LLM backend** with a structured prompt containing its persona, risk constraints, and the current vault context. The model returns a JSON response with actions and reasoning.
-4. **Actions are executed on-chain** — strategy allocations, deallocations, arena stakes — and the agent calls `executeAction()` which emits an immutable `AgentAction` event.
-5. **The full decision payload is published to HCS**, creating a permanent, timestamped, publicly queryable record of the agent's reasoning.
-6. **The frontend renders everything** by reading contract state via RPC, event logs via the Mirror Node, and HCS messages — providing users with complete visibility.
+3. **The agent fetches live market data** from CoinMarketCap — HBAR/BTC/ETH prices, 24h changes, volume, and market cap — to inform its decisions with real-world market context.
+4. **The agent queries its LLM backend** with a structured prompt containing its persona, risk constraints, vault context, and live market conditions. The model returns a JSON response with actions and market-aware reasoning.
+5. **Actions are executed on-chain** — strategy allocations, deallocations, arena stakes — and the agent calls `executeAction()` which emits an immutable `AgentAction` event.
+6. **The full decision payload is published to HCS** including a market data snapshot, creating a permanent, timestamped, publicly queryable record of the agent's reasoning and the market conditions at the time.
+7. **Users can talk to agents directly** — a conversational AI interface on each agent's page, backed by the agent's HCS decision history, live vault state, and market data as context. Every answer is grounded in verifiable on-chain data.
+8. **The frontend renders everything** by reading contract state via RPC, event logs via the Mirror Node, and HCS messages — providing users with complete visibility.
 
 ---
 
@@ -382,6 +384,27 @@ Each agent cycle:
 5. **Execute on-chain** — Strategy allocations, deallocations, or arena entries are submitted as transactions. `executeAction()` emits an immutable event.
 6. **Publish to HCS** — The full decision payload is written to the agent's Hedera Consensus Service topic.
 
+### Live Market Intelligence
+
+Every decision cycle, agents ingest **real-time market data from CoinMarketCap**:
+
+- **HBAR** — price, 1h/24h/7d % change, 24h volume, market cap
+- **BTC & ETH** — price and 24h change as broad market sentiment indicators
+- Market context is injected into the LLM prompt, enabling agents to reference specific prices and trends in their reasoning
+- A market data snapshot is included in each HCS message for full auditability — you can verify exactly what the agent saw when it made a decision
+
+This means agent reasoning reads like: *"HBAR is down 3.2% over 24h with elevated volume ($52M) — rotating $2,000 from MomentumPool to StableLending to protect capital"* rather than generic hold decisions.
+
+### Talk to Your Agent (Conversational AI)
+
+Users can chat with any agent directly from the agent detail page. The chat is powered by the same LLM that drives the agent's decisions, but with rich context:
+
+- **HCS decision history** — the agent's immutable on-chain reasoning log
+- **Live vault state** — TVL, idle balance, deployed capital, strategy allocations
+- **CoinMarketCap market data** — real-time prices and trends
+
+This creates a fully transparent, auditable conversational experience. Users can ask *"Why did you move funds to StableLending?"* and the agent will reference its actual HCS decisions and market conditions. The context sources are displayed in the chat UI with a direct link to verify the HCS topic on HashScan.
+
 ### Model-Agnostic Runtime
 
 The agent runtime is designed to be **model-agnostic**. It communicates with any LLM backend through an OpenAI-compatible API interface. The system supports pluggable model providers and can be configured to use different models for different agent personas. In production, Vaultera runs high-quality agentic models optimized for structured reasoning and financial decision-making.
@@ -411,6 +434,10 @@ A React single-page application providing complete real-time visibility into the
 | `/app/activity` | Full activity log with event decoding and filters |
 | `/app/portfolio` | User positions and returns across vaults |
 | `/app/settings` | Wallet management and testnet configuration |
+
+### Live Market Data Dashboard
+
+The overview and agent pages display live CoinMarketCap data — HBAR, BTC, and ETH prices with 24h changes, volume, and market cap. This data is shared with agents to ensure alignment between what users see and what agents act on.
 
 ### Real-Time Performance Engine
 
@@ -473,6 +500,9 @@ HEDERA_EVM_ADDRESS=0x...
 # LLM (any OpenAI-compatible provider)
 OPENROUTER_API_KEY=sk-or-v1-...
 # OPENAI_API_KEY=sk-...
+
+# CoinMarketCap — live market data for agents + frontend
+CMC_API_KEY=your-coinmarketcap-api-key
 ```
 
 ### 3. Deploy Contracts
@@ -537,6 +567,7 @@ npm run preview
 | **Smart Contracts** | Solidity 0.8.20 · OpenZeppelin · Hardhat |
 | **Agent Runtime** | Node.js · ethers v6 · @hashgraph/sdk |
 | **AI / LLM** | Model-agnostic — any OpenAI-compatible provider |
+| **Market Data** | CoinMarketCap API — live HBAR/BTC/ETH prices, volume, market cap |
 | **Frontend** | React 18 · TypeScript · Vite |
 | **Styling** | Tailwind CSS · shadcn/ui |
 | **State Management** | TanStack React Query |
